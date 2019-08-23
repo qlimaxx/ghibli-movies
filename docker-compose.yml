@@ -1,0 +1,67 @@
+version: '3'
+services:
+  redis:
+    container_name: ghibli-redis
+    image: redis:alpine
+  web:
+    container_name: ghibli-web
+    build: .
+    command: python3 manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .envs/config.env
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+    links:
+      - redis
+  celery-worker:
+    container_name: celery-worker
+    build: .
+    command: celery -A projconf worker -l INFO
+    env_file:
+      - .envs/config.env
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+    links:
+      - redis
+  celery-beat:
+    container_name: celery-beat
+    build: .
+    command: /bin/sh -c "rm -f celerybeat.pid; celery -A projconf beat -l INFO"
+    env_file:
+      - .envs/config.env
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+    links:
+      - redis
+  init:
+    container_name: ghibli-init
+    build: .
+    command: python3 manage.py migrate
+    env_file:
+      - .envs/config.env
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+    links:
+      - redis
+  test:
+    container_name: ghibli-test
+    build: .
+    command: /bin/sh -c "coverage run --source='.' manage.py test --settings=projconf.settings.test; coverage report -m"
+    env_file:
+      - .envs/config.env
+    volumes:
+      - .:/code
+    depends_on:
+      - redis
+    links:
+      - redis

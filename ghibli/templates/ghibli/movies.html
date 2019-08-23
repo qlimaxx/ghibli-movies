@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Ghibli Movies</title>
+    <style>
+    table, th, td {
+      border: 1px solid black;
+      padding: 5px;
+    }
+    </style>
+  </head>
+  <body>
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>People</th>
+      </tr>
+      {% for movie in movies %}
+      <tr>
+        <td><a href="https://ghibliapi.herokuapp.com/films/{{movie.id}}" target="_blank">{{movie.title}}</a></td>
+        <td>
+          <ul>
+            {% for e in movie.people %}
+            <li><a href="https://ghibliapi.herokuapp.com/people/{{e.id}}" target="_blank">{{e.name}}</a></li>
+            {% endfor %}
+          </ul>
+        </td>
+      </tr>
+      {% endfor %}
+    </table>
+  </body>
+</html>
